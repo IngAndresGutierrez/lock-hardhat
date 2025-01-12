@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div>
+      <input disabled type="text" id="counter" />
+      <button type="button" onclick="increment()">Increment</button>
+      <button type="button" onclick="getCounter()">Get Counter</button>
+    </div>
+
+    <script type="module">
+      import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js";
+
+      const CONTRACT_ABI = [
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_counter",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          inputs: [],
+          name: "getCounter",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "increment",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+      ];
+      const CONTRACT_ADDRESS = "0xF929Ed1c83dB3446FFC1316eCc3e2cD682D71c78";
+      let signer;
+      let contract;
+
+      const provider = new ethers.providers.Web3Provider(
+        window.ethereum,
+        "sepolia"
+      );
+
+      provider.send("eth_requestAccounts", []).then(() => {
+        provider.listAccounts().then((accounts) => {
+          signer = provider.getSigner(accounts[0]);
+          contract = new ethers.Contract(
+            CONTRACT_ADDRESS,
+            CONTRACT_ABI,
+            signer
+          );
+        });
+      });
+
+      async function increment() {
+        await contract.increment();
+        console.log("Incremented");
+      }
+
+      async function getCounter() {
+        const counter = await contract.getCounter();
+        console.log("Counter: ", counter.toString());
+        document.getElementById("counter").value = counter.toString();
+      }
+
+      window.increment = increment;
+      window.getCounter = getCounter;
+    </script>
+  </body>
+</html>
